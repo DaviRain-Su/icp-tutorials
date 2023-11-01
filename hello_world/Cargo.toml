@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "src/hello_world_backend",
+    "src/hello-world-call",
+]
+resolver = "2"
