@@ -36,12 +36,12 @@ impl VpClient {
         Ok(VpClient { agent })
     }
 
-    async fn query_ic(
+    async fn query_response(
         &self,
         canister_id: &str,
         method_name: &str,
         args: String,
-    ) -> Result<String, VpError> {
+    ) -> Result<Vec<u8>, VpError> {
         let canister_id = Principal::from_text(canister_id).map_err(VpError::principal_error)?;
 
         let response = QueryBuilder::new(&self.agent, canister_id, method_name.into())
@@ -52,17 +52,12 @@ impl VpClient {
                 println!("query_ic: {:?}", e);
                 VpError::agent_error(e)
             })?;
-
-        let result = Decode!(response.as_slice(), Error).unwrap();
-        // match result {
-        // Ok(value) => Ok(value),
-        // Err(e) => Err(VpError::custom_error(e.to_string())),
-        // }
-        Ok(result.to_string())
+        Ok(response)
     }
 
     pub async fn call_greet(&self, canister_id: &str, msg: String) -> Result<String, VpError> {
-        self.query_ic(canister_id, "greet", msg).await
+        let result = self.query_response(canister_id, "greet", msg).await?;
+        Decode!(result.as_slice(), String).map_err(|e| VpError::custom_error(e.to_string()))
     }
 
     pub async fn call_result_error(
@@ -70,7 +65,15 @@ impl VpClient {
         canister_id: &str,
         mag: String,
     ) -> Result<String, VpError> {
-        self.query_ic(canister_id, "result_error", mag).await
+        let result = self
+            .query_response(canister_id, "result_error", mag)
+            .await?;
+        let result = Decode!(result.as_slice(), Result<String, Error>)
+            .map_err(|e| VpError::custom_error(e.to_string()))?;
+        match result {
+            Ok(value) => Ok(value),
+            Err(e) => Err(VpError::custom_error(e.to_string())),
+        }
     }
 }
 
@@ -89,17 +92,14 @@ async fn main() {
     )
     .await
     .unwrap();
-    // let result = ic_client
-    //     .call_greet("bkyz2-fmaaa-aaaaa-qaaaq-cai", "hello".into())
-    //     .await
-    //     .unwrap();
-    // println!("result is {result:?}");
-
     let result = ic_client
-        .call_result_error("bkyz2-fmaaa-aaaaa-qaaaq-cai", "hello".into())
+        .call_greet("bkyz2-fmaaa-aaaaa-qaaaq-cai", "hello".into())
         .await
         .unwrap();
     println!("result is {result:?}");
 
-    // println!("Hello, world!");
+    let result = ic_client
+        .call_result_error("bkyz2-fmaaa-aaaaa-qaaaq-cai", "hello".into())
+        .await;
+    println!("result is {result:?}");
 }
