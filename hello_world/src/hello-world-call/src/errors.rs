@@ -1,5 +1,8 @@
+use candid::CandidType;
 use flex_error::{define_error, TraceError};
 use ic_agent::AgentError;
+use serde::Deserialize;
+use thiserror::Error;
 
 define_error! {
     VpError {
@@ -23,4 +26,10 @@ define_error! {
             [ TraceError<ic_agent::identity::PemError>]
             | _ | { "create identity failed" },
     }
+}
+
+#[derive(CandidType, Deserialize, Debug, Error)]
+pub enum Error {
+    #[error("dummy error: {0}")]
+    DummyError(String),
 }

@@ -2,6 +2,7 @@ pub mod errors;
 pub mod identity;
 pub mod types;
 
+use crate::errors::Error;
 use crate::errors::VpError;
 use crate::identity::create_identity;
 use candid::Principal;
@@ -52,14 +53,24 @@ impl VpClient {
                 VpError::agent_error(e)
             })?;
 
-        Decode!(response.as_slice(), String).map_err(|e| {
-            println!("update_ic: {:?}", e);
-            VpError::decode_ic_type_error(e)
-        })
+        let result = Decode!(response.as_slice(), Error).unwrap();
+        // match result {
+        // Ok(value) => Ok(value),
+        // Err(e) => Err(VpError::custom_error(e.to_string())),
+        // }
+        Ok(result.to_string())
     }
 
     pub async fn call_greet(&self, canister_id: &str, msg: String) -> Result<String, VpError> {
         self.query_ic(canister_id, "greet", msg).await
+    }
+
+    pub async fn call_result_error(
+        &self,
+        canister_id: &str,
+        mag: String,
+    ) -> Result<String, VpError> {
+        self.query_ic(canister_id, "result_error", mag).await
     }
 }
 
@@ -78,10 +89,17 @@ async fn main() {
     )
     .await
     .unwrap();
+    // let result = ic_client
+    //     .call_greet("bkyz2-fmaaa-aaaaa-qaaaq-cai", "hello".into())
+    //     .await
+    //     .unwrap();
+    // println!("result is {result:?}");
+
     let result = ic_client
-        .call_greet("bkyz2-fmaaa-aaaaa-qaaaq-cai", "hello".into())
+        .call_result_error("bkyz2-fmaaa-aaaaa-qaaaq-cai", "hello".into())
         .await
         .unwrap();
     println!("result is {result:?}");
+
     // println!("Hello, world!");
 }
