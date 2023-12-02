@@ -6,12 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-candid = "0.8"
-ic-cdk = { version = "0.7"}
-ring = "0.16.20"
-ic-agent = { version = "0.24.1", features = ["pem"] }
-flex-error = { version = "0.4.4", default-features = false }
-dirs = "5.0.1"
-serde = { version = "1.0.130", features = ["derive"] }
-tokio = { version = "1", features  = ["full"] }
-thiserror = "1"
+candid = { workspace = true }
+ic-cdk = { workspace = true  }
+ring = { workspace = true  }
+ic-agent = { workspace = true  }
+flex-error = { workspace = true  }
+dirs = { workspace = true  }
+serde = { workspace = true  }
+tokio = { workspace = true  }
+thiserror = { workspace = true  }
